@@ -10,58 +10,68 @@
 // ==/UserScript==
 
 class KeyBinds {
-	static init() {
-		if (!localStorage.hack_keys)
-			this.default();
-	}
+    static init() {
+        if (!localStorage.hack_keys)
+            this.default();
+    }
 
-	static default() {
-		const defaultBinds = {
-			spinbot: 'j',
-			aimbot: 'o',
-			esp: 'k',
-			bhop: 'l'
-		};
-		this.keys = defaultBinds;
-	}
+    static default() {
+        const defaultBinds = {
+            spinbot: 'j',
+            aimbot: 'o',
+            esp: 'k',
+            bhop: 'l'
+        };
+        
+        this.keys = defaultBinds;
+    }
 
-	static get keys() {
-		return JSON.parse(localStorage.hack_keys);
-	}
+    static get keys() {
+        return JSON.parse(localStorage.hack_keys);
+    }
 
-	static set keys(keys) {
-		localStorage.hack_keys = JSON.stringify(keys);
-	}
+    static set keys(keys) {
+        localStorage.hack_keys = JSON.stringify(keys);
+    }
 
-	static change(feature) {
-		let currentKeys = this.keys;
-		let key = prompt(`What key do you want to change ${feature} to? ("Mouse0" = LMB, "Mouse1" = MWheel, "Mouse2" = RMB, "Mouse3" = Mouse4, "Mouse4" = Mouse5)`, currentKeys[feature]);
-		if (!key) return; //no key provided
-		key = key.toLowerCase();
-		if (key.includes('mouse')) //for mouseBindings {0:'leftMouse',1:'middleClick', 2:'rightMouse', 3: 'sideButton1', 4: 'sideButton2'}
-			currentKeys[feature] = key.replace('ouse', '');
-		else
+    static change(feature) {
+        let currentKeys = this.keys;
+        let key = prompt(`What key do you want to change ${feature} to? ("Mouse0" = LMB, "Mouse1" = MWheel, "Mouse2" = RMB, "Mouse3" = Mouse4, "Mouse4" = Mouse5)`, currentKeys[feature]);
+        
+        if (!key) return; //no key provided
+
+        key = key.toLowerCase();
+
+        if (key.includes('mouse')) { //for mouseBindings {0:'leftMouse',1:'middleClick', 2:'rightMouse', 3: 'sideButton1', 4: 'sideButton2'}
+            currentKeys[feature] = key.replace('ouse', '');
+        } else {
             currentKeys[feature] = key[0];
-        this.keys = currentKeys;
-        document.getElementById(feature).innerText = currentKeys[feature].toUpperCase();
-	}
+        }
 
-	static handle({type, key, button}) {
-		let keys = this.keys,
-		prefix = '';
+        this.keys = currentKeys;
+
+        document.getElementById(feature).innerText = '(' + currentKeys[feature].toUpperCase() + ')';
+    }
+
+    static handle({ type, key, button }) {
+        let keys = this.keys;
+        let prefix = '';
 
         if (!key && button == undefined) return;
-		if (type.includes('mouse')) {
-			prefix = 'm';
-			key = button;
-		} else key = key.toLowerCase();
 
-		return Object.keys(keys).filter(_feature => keys[_feature] == `${prefix}${key}`)[0];
-	}
+        if (type.includes('mouse')) {
+            prefix = 'm';
+            key = button;
+        } else {
+            key = key.toLowerCase();
+        }
 
-	static get isTyping() {
-		return !!document.querySelectorAll('input:focus').length;
-	}
+        return Object.keys(keys).filter(_feature => keys[_feature] == prefix + key)[0];
+    }
+
+    static get isTyping() {
+        return !!document.querySelectorAll('input:focus').length;
+    }
 }
 
 class Krunker {
@@ -149,33 +159,37 @@ class Krunker {
         <hr>
         <b style="color: #FFFFFF;">GUI: </b> <span class="label label-warning pull-right" style="border-radius: 1px;">DRAGGABLE</span>
         <hr>
-        <b style="color: #FFFFFF;">Spinbot (<span id="spinbot" style="color: #FFFFFF;">${KeyBinds.keys.spinbot.toUpperCase()}</span>): </b> <span class="hack_spinbot label pull-right" style="border-radius: 1px;"></span>
+        <b style="color: #FFFFFF;">Spinbot <span id="spinbot" style="color: #FFFFFF;">(${KeyBinds.keys.spinbot.toUpperCase()})</span>: </b> <span class="hack_spinbot label pull-right" style="border-radius: 1px;"></span>
         <br>
-        <b style="color: #FFFFFF;">Aimbot (<span id="aimbot" style="color: #FFFFFF;">${KeyBinds.keys.aimbot.toUpperCase()}</span>):</b> <span class="hack_aimbot label pull-right" style="border-radius: 1px;"></span>
+        <b style="color: #FFFFFF;">Aimbot <span id="aimbot" style="color: #FFFFFF;">(${KeyBinds.keys.aimbot.toUpperCase()})</span>:</b> <span class="hack_aimbot label pull-right" style="border-radius: 1px;"></span>
         <br>
-        <b style="color: #FFFFFF;">Bhop (<span id="bhop" style="color: #FFFFFF;">${KeyBinds.keys.bhop.toUpperCase()}</span>): </b> <span class="hack_bhop label pull-right" style="border-radius: 1px;"></span>
+        <b style="color: #FFFFFF;">Bhop <span id="bhop" style="color: #FFFFFF;">(${KeyBinds.keys.bhop.toUpperCase()})</span>: </b> <span class="hack_bhop label pull-right" style="border-radius: 1px;"></span>
         <br>
-        <b style="color: #FFFFFF;">ESP (<span id="esp" style="color: #FFFFFF;">${KeyBinds.keys.esp.toUpperCase()}</span>): </b> <span class="hack_esp label pull-right" style="border-radius: 1px;"></span>
+        <b style="color: #FFFFFF;">ESP <span id="esp" style="color: #FFFFFF;">(${KeyBinds.keys.esp.toUpperCase()})</span>: </b> <span class="hack_esp label pull-right" style="border-radius: 1px;"></span>
         `;
 
         $('body').append(hackMenu);
         $('.hackMenu').draggable({ containment: "#gameUI", scroll: false });
 
+        function handleClick() {
+            return KeyBinds.change(this.id);
+        }
+
         document.querySelector('.hack_spinbot').innerText = localStorage.spinbot ? 'ON' : 'OFF';
         document.querySelector('.hack_spinbot').style.background = localStorage.spinbot ? '#5cb85c' : '#ff0000';
-        document.querySelector('.hack_spinbot').onclick = () => { KeyBinds.change('spinbot') };
+        document.getElementById('spinbot').onclick = handleClick;
 
         document.querySelector('.hack_aimbot').innerText = localStorage.aimbot ? 'ON' : 'OFF';
         document.querySelector('.hack_aimbot').style.background = localStorage.aimbot ? '#5cb85c' : '#ff0000';
-        document.querySelector('.hack_aimbot').onclick = () => { KeyBinds.change('aimbot') };
+        document.getElementById('aimbot').onclick = handleClick;
 
         document.querySelector('.hack_esp').innerText = localStorage.esp ? 'ON' : 'OFF';
         document.querySelector('.hack_esp').style.background = localStorage.esp ? '#5cb85c' : '#ff0000';
-        document.querySelector('.hack_esp').onclick = () => { KeyBinds.change('esp') };
+        document.getElementById('esp').onclick = handleClick;
 
         document.querySelector('.hack_bhop').innerText = localStorage.bhop ? 'ON' : 'OFF';
         document.querySelector('.hack_bhop').style.background = localStorage.bhop ? '#5cb85c' : '#ff0000';
-        document.querySelector('.hack_bhop').onclick = () => { KeyBinds.change('bhop') };
+        document.getElementById('bhop').onclick = handleClick;
 
         document.getElementById('gameVersion').innerText = window.version;
 
