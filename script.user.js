@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         KrunkCheat
 // @namespace    https://discord.gg/BeyH5Us
-// @version      1.1
+// @version      1.1.1
 // @description  Krunker.io Cheat - ESP, Aimbot, Spinbot, Bhop, and All Skins
 // @author       Lemons
 // @match        *://krunker.io/*
@@ -79,6 +79,11 @@ class Krunker {
         html = html.replace(/(<script src=".*?game.*?")(><\/script>)/, '$1 type="javascript/blocked" $2');
         html = html.replace(/<script src=".*?paypal.*?"><\/script>/, '');
         return html;
+    }
+
+    static chromeVersion() {
+        var raw = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
+        return raw ? parseInt(raw[2], 10) : false;
     }
 
     static get(url) {
@@ -397,6 +402,8 @@ class Krunker {
 
     var page = Krunker.patchHTML(html);
     var gameJS = Krunker.patchGame(code);
+
+    if (Krunker.chromeVersion < 76) window.stop();
 
     document.open();
     document.write(page);
